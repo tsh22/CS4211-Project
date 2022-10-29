@@ -1,0 +1,189 @@
+﻿// Match Data is from https://www.youtube.com/watch?v=YjibVseXSyQ
+//       *****
+// Player1: Loh Kean Yew
+// -------+-------+-------
+// |        rear  = 1    |  out of court = 7
+// |---------------------|
+// |   mid-court = 2     |
+// |---------------------|
+// |       fore  = 3     |  
+// |=====================|
+// |     fore    = 4     |
+// |---------------------|
+// |    mid-court = 5    |
+// |---------------------|
+// |       rear  = 6     |  out of court = 8
+// -------+-------+-------
+// Player2: Lee Zii Jia     serve position (for either players) = 9
+//       *****
+
+enum{player1, player2, na};
+
+var turn = na; // Serve turn;
+var lkyScore = 0;
+var lzjScore = 0;
+var won = na;
+var ball = 9; // Currently at serve position
+
+WhoServe1st = []i:{player1,player2}@ TossCoin{turn = i} -> Skip; // Decide which player serves first
+
+Game = WhoServe1st; (Player1Serve [] Player2Serve);
+Player1Serve = [won == na && turn == player1] lkyTurnToServe -> lky_Ply1Serve;
+Player2Serve = [won == na && turn == player2] lzjTurnToServe -> lzj_Ply2Serve;
+
+NextPoint = Player1Serve [] Player2Serve [] ([won != na] GameOver -> Skip);
+
+lky_Ply1Serve = pcase  {
+	34:serve_in_1 {ball=2} -> Ply2_Forehand
+	13:serve_in_2 {ball=2} -> Ply2_Backhand
+	3:serve_in_3 {ball=2} -> Ply2_Smash
+	0:serve_out {ball = 8} -> {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint
+};
+
+Ply1_Forehand = pcase {
+	27:FH_to_fore {ball=3} -> Ply2_Fore
+	0:FH_to_mid {ball=3} -> Ply2_Mid
+	0:FH_to_rear {ball=3} -> Ply2_Rear
+	2:FH_out {ball = 8} -> {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock passes the net but is out
+	0:FH_miss {ball = 7} -> {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock does not pass the net 
+};
+
+Ply1_Backhand = pcase {
+	17:BH_to_fore {ball=3} -> Ply2_Fore
+	4:BH_to_mid {ball=3} -> Ply2_Mid
+	3:BH_to_rear {ball=3} -> Ply2_Rear
+	0:BH_out {ball = 8} -> {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock passes the net but is out
+	0:BH_miss {ball = 7} -> {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock does not pass the net 
+};
+
+Ply1_Smash = pcase {
+	0:Smash_to_fore {ball=3} -> Ply2_Fore
+	2:Smash_to_mid {ball=3} -> Ply2_Mid
+	0:Smash_to_rear {ball=3} -> Ply2_Rear
+	0:Smash_out {ball = 8} -> {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock passes the net but is out
+	0:Smash_miss {ball = 7} -> {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock does not pass the net 
+};
+
+// Player1 hits from fore court
+Ply1_Fore = pcase {
+	48:FH_to_fore {ball = 4} -> Ply2_Fore
+	3:FH_to_mid {ball = 5} -> Ply2_Mid
+	27:FH_to_rear {ball = 6} -> Ply2_Rear
+	38:BH_to_fore {ball = 4} -> Ply2_Fore
+	7:BH_to_mid {ball = 5} -> Ply2_Mid
+	21:BH_to_rear {ball = 6} -> Ply2_Rear
+	3:Smash_to_fore {ball = 4} -> Ply2_Fore
+	12:Smash_to_mid {ball = 5} -> Ply2_Mid
+	4:Smash_to_rear {ball = 6} -> Ply2_Rear
+	5:Out {ball = 8} ->  {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock passes the net but is out
+	14:Miss {ball = 7} ->  {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock does not pass the net
+};
+
+// Player1 hits from mid court
+Ply1_Mid = pcase {
+	10:FH_to_fore {ball = 4} -> Ply2_Fore
+	16:FH_to_mid {ball = 5} -> Ply2_Mid
+	11:FH_to_rear {ball = 6} -> Ply2_Rear
+	29:BH_to_fore {ball = 4} -> Ply2_Fore
+	16:BH_to_mid {ball = 5} -> Ply2_Mid
+	10:BH_to_rear {ball = 6} -> Ply2_Rear
+	1:Smash_to_fore {ball = 4} -> Ply2_Fore
+	2:Smash_to_mid {ball = 5} -> Ply2_Mid
+	5:Smash_to_rear {ball = 6} -> Ply2_Rear
+	3:Out {ball = 8} ->  {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock passes the net but is out
+	10:Miss {ball = 7} ->  {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock does not pass the net
+};
+
+// Player1 hits from rear court
+Ply1_Rear = pcase {
+	5:FH_to_fore {ball = 4} -> Ply2_Fore
+	19:FH_to_mid {ball = 5} -> Ply2_Mid
+	5:FH_to_rear {ball = 6} -> Ply2_Rear
+	2:BH_to_fore {ball = 4} -> Ply2_Fore
+	11:BH_to_mid {ball = 5} -> Ply2_Mid
+	7:BH_to_rear {ball = 6} -> Ply2_Rear
+	2:Smash_to_fore {ball = 4} -> Ply2_Fore
+	32:Smash_to_mid {ball = 5} -> Ply2_Mid
+	15:Smash_to_rear {ball = 6} -> Ply2_Rear
+	4:Out {ball = 8} ->  {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock passes the net but is out
+	20:Miss {ball = 7} ->  {lzjScore++; if (lzjScore == 21) {won = player2} else { turn = player2 }} -> NextPoint // When the shuttlecock does not pass the net
+};
+
+lzj_Ply2Serve = pcase {
+	31:serve_in_1 {ball = 5} -> Ply1_Forehand
+	25:serve_in_2 {ball = 5} -> Ply1_Backhand
+	3:serve_in_3 {ball = 5} -> Ply1_Smash
+	0:serve_out {ball = 7} -> {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint
+};
+
+Ply2_Forehand = pcase {
+	26:FH_to_fore {ball = 4} -> Ply1_Fore
+	3:FH_to_mid {ball = 4} -> Ply1_Mid
+	4:FH_to_rear {ball = 4} -> Ply1_Rear
+	0:FH_out {ball = 7} -> {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock passes the net but is out
+	2:FH_miss {ball = 8} -> {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock does not pass the net
+};
+
+Ply2_Backhand = pcase {
+	12:BH_to_fore {ball = 4} -> Ply1_Fore
+	0:BH_to_mid {ball = 4} -> Ply1_Mid
+	0:BH_to_rear {ball = 4} -> Ply1_Rear
+	0:BH_out {ball = 7} -> {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock passes the net but is out
+	0:BH_miss {ball = 8} -> {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock does not pass the net
+};
+
+Ply2_Smash = pcase {
+	1:Smash_to_fore {ball = 4} -> Ply1_Fore
+	2:Smash_to_mid {ball = 4} -> Ply1_Mid
+	1:Smash_to_rear {ball = 4} -> Ply1_Rear
+	0:Smash_out {ball = 7} -> {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock passes the net but is out
+	0:Smash_miss {ball = 8} -> {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock does not pass the net
+};
+
+// Player2 hits from fore court
+Ply2_Fore = pcase {
+	50:FH_to_fore {ball = 3} -> Ply1_Fore
+	8:FH_to_mid {ball = 2} -> Ply1_Mid
+	45:FH_to_rear {ball = 1} -> Ply1_Rear
+	39:BH_to_fore {ball = 3} -> Ply1_Fore
+	4:BH_to_mid {ball = 2} -> Ply1_Mid
+	29:BH_to_rear {ball = 1} -> Ply1_Rear
+	0:Smash_to_fore {ball = 3} -> Ply1_Fore
+	1:Smash_to_mid {ball = 2} -> Ply1_Mid
+	0:Smash_to_rear {ball = 1} -> Ply1_Rear
+	10:Out {ball = 7} ->  {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock passes the net but is out
+	6:Miss {ball = 8} ->  {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock does not pass the net
+};
+
+// Player1 hits from mid court
+Ply2_Mid = pcase {
+	13:FH_to_fore {ball = 3} -> Ply1_Fore
+	12:FH_to_mid {ball = 2} -> Ply1_Mid
+	8:FH_to_rear {ball = 1} -> Ply1_Rear
+	15:BH_to_fore {ball = 3} -> Ply1_Fore
+	30:BH_to_mid {ball = 2} -> Ply1_Mid
+	8:BH_to_rear {ball = 1} -> Ply1_Rear
+	1:Smash_to_fore {ball = 3} -> Ply1_Fore
+	7:Smash_to_mid {ball = 2} -> Ply1_Mid
+	0:Smash_to_rear {ball = 1} -> Ply1_Rear
+	5:Out {ball = 7} ->  {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock passes the net but is out
+	15:Miss {ball = 8} ->  {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock does not pass the net
+};
+
+// Player1 hits from rear court
+Ply2_Rear = pcase {
+	6:FH_to_fore {ball = 3} -> Ply1_Fore
+	6:FH_to_mid {ball = 2} -> Ply1_Mid
+	5:FH_to_rear {ball = 1} -> Ply1_Rear
+	0:BH_to_fore {ball = 3} -> Ply1_Fore
+	13:BH_to_mid {ball = 2} -> Ply1_Mid
+	2:BH_to_rear {ball = 1} -> Ply1_Rear
+	3:Smash_to_fore {ball = 3} -> Ply1_Fore
+	26:Smash_to_mid {ball = 2} -> Ply1_Mid
+	30:Smash_to_rear {ball = 1} -> Ply1_Rear
+	7:Out {ball = 7} ->  {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock passes the net but is out
+	12:Miss {ball = 8} ->  {lkyScore++; if (lkyScore == 21) {won = player1} else { turn = player1 }} -> NextPoint // When the shuttlecock does not pass the net
+};
+
+#define player1Win won == player1;
+#assert Game reaches player1Win with prob;
