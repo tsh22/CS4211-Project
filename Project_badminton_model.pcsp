@@ -38,7 +38,7 @@ lky_Ply1Serve = pcase  {
 	34:serve_in_1 {ball=2} -> Ply2_Forehand
 	13:serve_in_2 {ball=2} -> Ply2_Backhand
 	3:serve_in_3 {ball=2} -> Ply2_Smash
-	0:serve_out {ball = 8} -> {lzjScore++; if (lzjScore == 30 || (lzjScore == 30 || (lzjScore >= 21 && lzjScore - lkyScore >= 2))) {won = player2} else { turn = player2 }} -> NextPoint
+	0:serve_out {ball = 8} -> {lzjScore++; if (lzjScore == 30 || (lzjScore >= 21 && lzjScore - lkyScore >= 2)) {won = player2} else { turn = player2 }} -> NextPoint
 };
 
 Ply1_Forehand = pcase {
