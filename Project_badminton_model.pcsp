@@ -24,6 +24,7 @@ var lkyScore = 0;
 var lzjScore = 0;
 var won = na;
 var ball = 9; // Currently at serve position
+var winningScore = 21;
 
 WhoServe1st = []i:{player1,player2}@ TossCoin{turn = i} -> Skip; // Decide which player serves first
 
