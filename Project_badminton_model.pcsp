@@ -25,6 +25,7 @@ var lzjScore = 0;
 var won = na;
 var ball = 9; // Currently at serve position
 var winningScore = 21;
+var maxScore = 30;
 
 WhoServe1st = []i:{player1,player2}@ TossCoin{turn = i} -> Skip; // Decide which player serves first
 
@@ -187,4 +188,23 @@ Ply2_Rear = pcase {
 };
 
 #define player1Win won == player1;
+#define player1WinsNoTieBreaker (lkyScore == 21 && lzjScore <= 19 && won == player1); // When player1 is the winner and no tie break match is played
+#define player1WinsTieBreaker (lkyScore >= 20 && lzjScore >= 20 && won == player1); // When both players are tied and continue playing until player1 wins
+#define player1WinsFinalTieBreaker (lkyScore >= 29 && lzjScore >= 29 && won == player1); // When both players are tied until the score is 29-29 and player1 wins
+
+#define player2Win won == player2;
+#define player2WinsNoTieBreaker (lzjScore == 21 && lkyScore <= 19 && won == player2); // When player2 is the winner and no tie break match is played
+#define player2WinsTieBreaker (lkyScore >= 20 && lzjScore >= 20 && won == player2); // When both players are tied and continue playing until player2 wins
+#define player2WinsFinalTieBreaker (lkyScore >= 29 && lzjScore >= 29 && won == player2); // When both players are tied until the score is 29-29 and player2 wins
+
 #assert Game reaches player1Win with prob;
+#assert Game reaches player1WinsNoTieBreaker with prob;
+#assert Game reaches player1WinsTieBreaker with prob;
+#assert Game reaches player1WinsFinalTieBreaker with prob;
+
+#assert Game reaches player2Win with prob;
+#assert Game reaches player2WinsNoTieBreaker with prob;
+#assert Game reaches player2WinsTieBreaker with prob;
+#assert Game reaches player2WinsFinalTieBreaker with prob;
+
+#assert Game deadlockfree;
